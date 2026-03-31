@@ -1,0 +1,11 @@
+@vital_stream_HostAddress = http://localhost:5008
+
+GET {{vital_stream_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{vital_stream_HostAddress}}/todos/1
+Accept: application/json
+
+###
