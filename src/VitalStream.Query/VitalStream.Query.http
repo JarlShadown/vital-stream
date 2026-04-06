@@ -1,0 +1,32 @@
+//@host = http://localhost:5174
+@host = http://localhost:8081
+
+# ── GET /stream — SSE, no filters (all patients, all types) ──────────────────
+GET {{host}}/stream
+Accept: text/event-stream
+
+###
+
+# ── GET /stream — filter by patientId ────────────────────────────────────────
+GET {{host}}/stream?patientId=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+Accept: text/event-stream
+
+###
+
+# ── GET /stream — filter by type (0=HeartRate) and severity (2=Critical) ─────
+GET {{host}}/stream?type=0&severity=2
+Accept: text/event-stream
+
+###
+
+# ── GET /patients/{patientId}/vitals/summary ──────────────────────────────────
+GET {{host}}/patients/00000000-0000-0000-0000-000000000001/vitals/summary
+Accept: application/json
+
+###
+
+# ── PATCH /alerts/{alertId}/ack ───────────────────────────────────────────────
+PATCH {{host}}/alerts/00000000-0000-0000-0000-000000000099/ack
+Content-Type: application/json
+
+###

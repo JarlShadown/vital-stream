@@ -1,0 +1,74 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  vitalstream.aggregator:
+    build:
+      context: "/Users/miguel/RiderProjects/vital-stream"
+      dockerfile: "src/VitalStream.Aggregator/Dockerfile"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/VitalStream.Aggregator.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "vitalstream.aggregator:dev"
+    ports: []
+    volumes:
+    - "/Users/miguel/RiderProjects/vital-stream/src/VitalStream.Aggregator:/app:rw"
+    - "/Users/miguel/RiderProjects/vital-stream:/src:rw"
+    - "/Users/miguel/.nuget/packages:/root/.nuget/packages"
+    working_dir: "/app"
+  vitalstream.alerts:
+    build:
+      context: "/Users/miguel/RiderProjects/vital-stream"
+      dockerfile: "src/VitalStream.Alerts/Dockerfile"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/VitalStream.Alerts.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "vitalstream.alerts:dev"
+    ports: []
+    volumes:
+    - "/Users/miguel/RiderProjects/vital-stream/src/VitalStream.Alerts:/app:rw"
+    - "/Users/miguel/RiderProjects/vital-stream:/src:rw"
+    - "/Users/miguel/.nuget/packages:/root/.nuget/packages"
+    working_dir: "/app"
+  vitalstream.ingest:
+    build:
+      context: "/Users/miguel/RiderProjects/vital-stream"
+      dockerfile: "src/VitalStream.Ingest/Dockerfile"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/VitalStream.Ingest.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "vitalstream.ingest:dev"
+    ports: []
+    volumes:
+    - "/Users/miguel/RiderProjects/vital-stream/src/VitalStream.Ingest:/app:rw"
+    - "/Users/miguel/RiderProjects/vital-stream:/src:rw"
+    - "/Users/miguel/.nuget/packages:/root/.nuget/packages"
+    working_dir: "/app"
+  vitalstream.query:
+    build:
+      context: "/Users/miguel/RiderProjects/vital-stream"
+      dockerfile: "src/VitalStream.Query/Dockerfile"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/VitalStream.Query.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "vitalstream.query:dev"
+    ports: []
+    volumes:
+    - "/Users/miguel/RiderProjects/vital-stream/src/VitalStream.Query:/app:rw"
+    - "/Users/miguel/RiderProjects/vital-stream:/src:rw"
+    - "/Users/miguel/.nuget/packages:/root/.nuget/packages"
+    working_dir: "/app"

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vitalstream-ingest
+  namespace: vitalstream
+  labels:
+    app: vitalstream-ingest
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vitalstream-ingest
+  template:
+    metadata:
+      labels:
+        app: vitalstream-ingest
+    spec:
+      containers:
+        - name: ingest
+          image: vitalstream.ingest:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: clinical-thresholds
+          env:
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: Kafka__BootstrapServers
+              value: "broker:9092"
+            - name: Kafka__Topic
+              value: "vital-readings"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "128Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalstream-ingest
+  namespace: vitalstream
+spec:
+  selector:
+    app: vitalstream-ingest
+  ports:
+    - port: 80
+      targetPort: 8080

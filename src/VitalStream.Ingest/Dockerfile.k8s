@@ -1,0 +1,26 @@
+# Production k8s build — Native AOT, runtime-deps base (~30 MB image).
+# Build: docker build -f Dockerfile.k8s --build-arg TARGETARCH=arm64 -t vitalstream.ingest:latest .
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+ARG TARGETARCH=arm64
+WORKDIR /src
+
+COPY ["src/VitalStream.Ingest/VitalStream.Ingest.csproj",   "src/VitalStream.Ingest/"]
+COPY ["src/VitalStream.Shared/VitalStream.Shared.csproj",   "src/VitalStream.Shared/"]
+RUN dotnet restore "src/VitalStream.Ingest/VitalStream.Ingest.csproj" -r linux-${TARGETARCH}
+
+COPY . .
+WORKDIR "/src/src/VitalStream.Ingest"
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    clang zlib1g-dev libicu-dev build-essential && rm -rf /var/lib/apt/lists/*
+RUN dotnet publish "VitalStream.Ingest.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -r linux-${TARGETARCH} \
+    -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0
+WORKDIR /app
+EXPOSE 8080
+COPY --from=build /app/publish .
+ENTRYPOINT ["./VitalStream.Ingest"]

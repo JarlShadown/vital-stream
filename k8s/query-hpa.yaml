@@ -1,0 +1,46 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vitalstream-query-hpa
+  namespace: vitalstream
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vitalstream-query
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+    # ── Trigger 1: CPU utilization ────────────────────────────────────────────
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # ── Trigger 2: Active SSE connections per pod ─────────────────────────────
+    # Requires prometheus-adapter configured to expose the sse_active_connections
+    # gauge scraped from each pod's /metrics endpoint.
+    # Target: average 40,000 connections per pod before adding a replica.
+    - type: Pods
+      pods:
+        metric:
+          name: sse_active_connections
+        target:
+          type: AverageValue
+          averageValue: "40000"
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type:          Pods
+          value:         2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300   # 5-min cooldown — SSE sessions are long-lived
+      policies:
+        - type:          Pods
+          value:         1
+          periodSeconds: 120

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vitalstream-aggregator
+  namespace: vitalstream
+  labels:
+    app: vitalstream-aggregator
+spec:
+  # Max replicas = Kafka partition count (12).
+  # Each consumer instance in the group gets 1+ partitions.
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vitalstream-aggregator
+  template:
+    metadata:
+      labels:
+        app: vitalstream-aggregator
+    spec:
+      containers:
+        - name: aggregator
+          image: vitalstream.aggregator:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: Kafka__BootstrapServers
+              value: "broker:9092"
+            - name: Kafka__Topic
+              value: "vital-readings"
+            - name: Database__ConnectionString
+              value: "Host=timescaledb;Port=5432;Database=vitalstream;Username=postgres;Password=postgres"
+            - name: Redis__ConnectionString
+              value: "redis:6379"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            # Give the consumer time to join the group and receive partition assignment
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalstream-aggregator
+  namespace: vitalstream
+spec:
+  selector:
+    app: vitalstream-aggregator
+  ports:
+    - port: 80
+      targetPort: 8080

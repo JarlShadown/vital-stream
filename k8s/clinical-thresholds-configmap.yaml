@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinical-thresholds
+  namespace: vitalstream
+data:
+  # ── Vital sign alert thresholds ─────────────────────────────────────────────
+  # These values override the compiled-in defaults in ClinicalThresholds.cs.
+  # Change them here and roll the affected Deployments — no rebuild required.
+
+  # HeartRate (bpm)
+  ClinicalThresholds__HeartRate__WarningLow:   "60"
+  ClinicalThresholds__HeartRate__WarningHigh:  "100"
+  ClinicalThresholds__HeartRate__CriticalLow:  "40"
+  ClinicalThresholds__HeartRate__CriticalHigh: "150"
+
+  # SpO2 (%)
+  ClinicalThresholds__SpO2__WarningBelow:  "95"
+  ClinicalThresholds__SpO2__CriticalBelow: "90"
+
+  # Blood Pressure Systolic (mmHg)
+  ClinicalThresholds__BloodPressureSystolic__WarningLow:   "90"
+  ClinicalThresholds__BloodPressureSystolic__WarningHigh:  "140"
+  ClinicalThresholds__BloodPressureSystolic__CriticalLow:  "70"
+  ClinicalThresholds__BloodPressureSystolic__CriticalHigh: "180"
+
+  # Temperature (°C)
+  ClinicalThresholds__Temperature__WarningLow:   "36.0"
+  ClinicalThresholds__Temperature__WarningHigh:  "38.0"
+  ClinicalThresholds__Temperature__CriticalLow:  "35.0"
+  ClinicalThresholds__Temperature__CriticalHigh: "40.0"
+
+  # ── Trend detection ──────────────────────────────────────────────────────────
+  # SpO2 falling trend: fire alert when the value drops more than this
+  # many percentage points within the observation window.
+  ClinicalThresholds__Spo2FallThresholdPct:  "2.0"
+  ClinicalThresholds__Spo2FallWindowMinutes: "10"

@@ -1,11 +1,49 @@
-@vital_stream_HostAddress = http://localhost:5008
+@host = http://localhost:8081
+@deviceId = device-001
 
-GET {{vital_stream_HostAddress}}/todos/
-Accept: application/json
+# NOTE: The HMAC signatures below are pre-computed for the exact body bytes shown.
+# Any change to whitespace or field order will invalidate the signature.
+# To regenerate: echo -n '<body>' | openssl dgst -sha256 -hmac 'dev-secret-replace-me'
+#
+# VitalType enum: HeartRate=0, SpO2=1, BloodPressureSystolic=2, BloodPressureDiastolic=3, Temperature=4
 
-###
+### 1. HeartRate Normal (72 bpm) → Severity: Normal → 200 OK
+POST {{host}}/ingest/{{deviceId}}
+Content-Type: application/json
+X-Signature-256: sha256=b355b1502c4ca17f1e52ca8b98205017bad67f4e62df55b8c7040d0cf92f0e05
 
-GET {{vital_stream_HostAddress}}/todos/1
-Accept: application/json
+{"patientId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","deviceId":"device-001","deviceType":"Wearable","type":0,"value":72.0,"unit":"bpm","recordedAt":"2026-03-31T10:00:00+00:00","receivedAt":"2026-03-31T10:00:01+00:00","correlationId":"b2c3d4e5-f6a7-8901-bcde-f12345678901","notes":null}
 
-###
+### 2. HeartRate Critical (160 bpm) → Severity: Critical → 200 OK
+POST {{host}}/ingest/{{deviceId}}
+Content-Type: application/json
+X-Signature-256: sha256=db91808c95bc418516730d7fc1d98d2557b527bc8410e1de60f7d21a8029edf5
+
+{"patientId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","deviceId":"device-001","deviceType":"Wearable","type":0,"value":160.0,"unit":"bpm","recordedAt":"2026-03-31T10:05:00+00:00","receivedAt":"2026-03-31T10:05:01+00:00","correlationId":"c3d4e5f6-a7b8-9012-cdef-123456789012","notes":null}
+
+### 3. SpO2 Warning (93%) → Severity: Warning → 200 OK
+POST {{host}}/ingest/{{deviceId}}
+Content-Type: application/json
+X-Signature-256: sha256=d399e5de19016cd3973f9338bb3e843d3bc99216597fd247c6be9f22683c3748
+
+{"patientId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","deviceId":"device-001","deviceType":"Wearable","type":1,"value":93.0,"unit":"%","recordedAt":"2026-03-31T10:10:00+00:00","receivedAt":"2026-03-31T10:10:01+00:00","correlationId":"d4e5f6a7-b8c9-0123-defa-234567890123","notes":null}
+
+### 4. Invalid HMAC → 422 Unprocessable Entity
+POST {{host}}/ingest/{{deviceId}}
+Content-Type: application/json
+X-Signature-256: sha256=0000000000000000000000000000000000000000000000000000000000000000
+
+{"patientId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","deviceId":"device-001","deviceType":"Wearable","type":0,"value":72.0,"unit":"bpm","recordedAt":"2026-03-31T10:00:00+00:00","receivedAt":"2026-03-31T10:00:01+00:00","correlationId":"b2c3d4e5-f6a7-8901-bcde-f12345678901","notes":null}
+
+### 5. Missing X-Signature-256 header → 422 Unprocessable Entity
+POST {{host}}/ingest/{{deviceId}}
+Content-Type: application/json
+
+{"patientId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","deviceId":"device-001","deviceType":"Wearable","type":0,"value":72.0,"unit":"bpm","recordedAt":"2026-03-31T10:00:00+00:00","receivedAt":"2026-03-31T10:00:01+00:00","correlationId":"b2c3d4e5-f6a7-8901-bcde-f12345678901","notes":null}
+
+### 6. DeviceId mismatch (route vs payload) → 422 Unprocessable Entity
+POST {{host}}/ingest/device-999
+Content-Type: application/json
+X-Signature-256: sha256=b355b1502c4ca17f1e52ca8b98205017bad67f4e62df55b8c7040d0cf92f0e05
+
+{"patientId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","deviceId":"device-001","deviceType":"Wearable","type":0,"value":72.0,"unit":"bpm","recordedAt":"2026-03-31T10:00:00+00:00","receivedAt":"2026-03-31T10:00:01+00:00","correlationId":"b2c3d4e5-f6a7-8901-bcde-f12345678901","notes":null}

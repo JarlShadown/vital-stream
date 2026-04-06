@@ -1,3 +1,6 @@
+using VitalStream.Shared;
+using VitalStream.Shared.Models;
+
 namespace VitalStream.DTOs;
 
-public record VitalReadingDTO();
+public record VitalReadingDto:VitalReading;
